@@ -1,0 +1,100 @@
+/* login-register.component.scss */
+:host {
+  display: block;
+}
+
+.form-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.form-wrapper {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.login-form, .register-form {
+  backface-visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.register-form {
+  transform: rotateY(180deg);
+}
+
+.form-flip {
+  transform: rotateY(180deg);
+}
+
+
+.form-input {
+  animation: slideIn 0.5s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@for $i from 1 through 5 {
+  .form-input:nth-child(#{$i}) {
+    animation-delay: #{$i * 0.1}s;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+button {
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+}
+
+
+.forgot-password {
+  position: relative;
+  overflow: hidden;
+
+  &:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,0.2),
+      transparent
+    );
+    animation: flash 2s infinite;
+  }
+}
+
+@keyframes flash {
+  from {
+    left: -100%;
+  }
+  to {
+    left: 100%;
+  }
+}

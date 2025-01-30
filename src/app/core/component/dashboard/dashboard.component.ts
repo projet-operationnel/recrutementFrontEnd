@@ -1,116 +1,125 @@
-import { animate, state, style, transition, trigger } from '@angular/animations';
+// dashboard.component.ts
 import { Component } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
-import { ResponseData } from '../../../shared/interfaces/response-data';
+import { Router } from '@angular/router';
+import { trigger, state, style, animate, transition } from '@angular/animations';
 import { AuthService } from '../../../auth/service/auth.service';
 import { AlertService } from '../../../shared/services/Alert/alert.service';
-import Lottie from 'lottie-web';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
-  standalone: true,
-  imports: [RouterModule],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css',
+  styleUrls: ['./dashboard.component.scss'],
   animations: [
-    trigger('fadeInOut', [
-      state('void', style({
-        position:"relative",
-        left: -1000,
+    // Sidebar animation
+    trigger('sidebarAnimation', [
+      state('open', style({
+        transform: 'translateX(0)',
+        width: '16rem'
       })),
-      state('*', style({
-        position:"relative",
-        left: 0,
+      state('closed', style({
+        transform: 'translateX(-100%)',
+        width: '0'
       })),
-      transition(':enter, :leave', [
-        animate('300ms ease-in-out'),
+      transition('open <=> closed', [
+        animate('0.3s ease-in-out')
       ])
     ]),
-
-    trigger('dropdownProfil', [
-      state('void', style({
-        clipPath: 'polygon(0 0, 100% 0, 100% 0, 0 0)',
+    // Dropdown animation
+    trigger('dropdownAnimation', [
+      state('open', style({
+        opacity: 1,
+        transform: 'translateY(0)',
+        visibility: 'visible'
       })),
-      state('*', style({
-        clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)',
+      state('closed', style({
+        opacity: 0,
+        transform: 'translateY(-10px)',
+        visibility: 'hidden'
       })),
-      transition(':enter, :leave', [
-        animate('300ms ease-in-out'),
+      transition('open <=> closed', [
+        animate('0.2s ease-in-out')
+      ])
+    ]),
+    // Mobile menu animation
+    trigger('mobileMenuAnimation', [
+      state('open', style({
+        opacity: 1,
+        transform: 'translateY(0)',
+        height: '*'
+      })),
+      state('closed', style({
+        opacity: 0,
+        transform: 'translateY(-10px)',
+        height: '0'
+      })),
+      transition('open <=> closed', [
+        animate('0.3s ease-in-out')
       ])
     ])
   ]
 })
 export class DashboardComponent {
-  constructor(private router: Router, private authService: AuthService, private alertService: AlertService) { }
-  ngOnInit(){
-    this.defineElement(Lottie.loadAnimation);
+  isLoading = false;
+  isSidebarOpen = true;
+  isMobileMenuOpen = false;
+  isDropDownPanelOpen = false;
+
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private alertService: AlertService
+  ) {}
+
+  toggleSidebar() {
+    this.isSidebarOpen = !this.isSidebarOpen;
   }
 
-
-  fadeInOutState = '';
-  dropdownProfilState="";
-
-  isSearchPanelOpen: boolean = false;
-  isNotificationPanelOpen: boolean = false;
-  isDropDownPanelOpen: boolean = false;
-
-
-
-  openSearchPanel() {
-    this.isSearchPanelOpen = !this.isSearchPanelOpen;
+  toggleMobileMenu() {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+    if (this.isMobileMenuOpen) {
+      this.isDropDownPanelOpen = false;
+    }
   }
 
-  openNotificationPanel() {
-    this.isNotificationPanelOpen = !this.isNotificationPanelOpen;
-  }
-
-
-  dropdownopen(){
+  toggleUserDropdown() {
     this.isDropDownPanelOpen = !this.isDropDownPanelOpen;
   }
-
-
-  logout() {
-    this.alertService.showConfirmation("Deconnexion", "Voulez vous vraiment vous déconnecter").then((result) => {
-      if (result.isConfirmed) {
-        this.authService.getData<ResponseData<[]>>("logout").subscribe({
-          next: (value ) => {
-            if (value.status) {
-              localStorage.clear();
-              this.router.navigateByUrl('/auth');
-            }
-
-          },
-          error: (err) => {
-            this.alertService.showAlert({
-              title: "Erreur",
-              text: err.message,
-              icon: "warning"
-            })
-
-          },
-          complete: () => {
-
-          }
-        });
-
-
-      }
-    });
-
-
-
-  }
-
 
   isActive(link: string): boolean {
     return this.router.isActive(link, true);
   }
 
-  defineElement(loadAnimation: any) {
-    throw new Error('Function not implemented.');
-  }
+   logout(): void {
+  this.alertService.showConfirmation("Déconnexion", "Voulez-vous vraiment vous déconnecter ?").then((result) => {
+    this.isLoading = true;
+    const token = this.authService.getToken();
+        if (!token) {
+          this.alertService.showAlert({
+            title: "Erreur",
+            text: "Token introuvable, déconnexion impossible",
+            icon: "error"
+          });
+          return;
+        }
+        this.authService.postData('logout', { token }).pipe(
+      finalize(() => this.isLoading = false)
+    ).subscribe({
+      next: (value: any) => {
+        if (value.status) {
+                      localStorage.clear();
+                      this.router.navigateByUrl('/auth');
+          }
+      },
+      error: (error) => {
+        this.alertService.showAlert({
+                    title: "Erreur",
+                    text: error.message,
+                    icon: "warning"
+                });
+            }
+    });
+  })
+    }
+
 }
-
-
-

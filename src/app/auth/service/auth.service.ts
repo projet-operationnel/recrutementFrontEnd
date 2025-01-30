@@ -34,4 +34,6 @@ export class AuthService extends ParentService{
       localStorage.setItem(environment.appName + "_user", JSON.stringify(user));
   }
 
+  
+
 }

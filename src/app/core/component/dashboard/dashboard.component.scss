@@ -1,0 +1,57 @@
+/* Base Styles */
+:host {
+  @apply antialiased;
+}
+
+/* Menu Link Styles */
+.menuLink {
+  @apply relative overflow-hidden transition-all duration-300 ease-in-out;
+
+  &::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-0.5 bg-[#DC8621] translate-x-full transition-transform duration-300;
+  }
+
+  &:hover::after {
+    @apply translate-x-0;
+  }
+}
+
+/* Active Link Styles */
+.activeLink {
+  @apply bg-[#DC8621] text-white transition-colors duration-300;
+
+  &::after {
+    @apply translate-x-0 bg-white;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-[#0873B5] rounded-full;
+}
+
+/* Animation Classes */
+.slide-enter {
+  @apply translate-x-0 opacity-100;
+}
+
+.slide-exit {
+  @apply -translate-x-full opacity-0;
+}
+
+.dropdown-open {
+  @apply translate-y-0 opacity-100 visible;
+}
+
+.dropdown-closed {
+  @apply translate-y-2 opacity-0 invisible;
+}

@@ -1,6 +1,6 @@
 export const environment = {
   url : {
-      api : "http://localhost:8000/api/",
+      api : "https://recrutementtuteutunchk-v2.onrender.com/api/v1/",
   },
   appName : "gestionRecrutement",
   linkPhoto:'http://localhost:8000/storage/images/',
