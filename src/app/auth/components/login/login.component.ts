@@ -36,11 +36,21 @@ import { finalize } from 'rxjs';
           opacity: 1
         }))
       ])
+    ]),
+    trigger('fadeSlide', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(1.1)' }),
+        animate('500ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
+      ]),
+      transition(':leave', [
+        animate('500ms ease-in', style({ opacity: 0, transform: 'scale(1.1)' }))
+      ])
     ])
   ]
 })
 
 export class LoginComponent {
+  currentImage = 'login';
   isLogin = true;
   isLoading = false;
   errorMessage: { login: string; register: string } = {
@@ -135,7 +145,7 @@ export class LoginComponent {
         }
       },
       error: (error) => {
-        this.errorMessage.login = error.message || 'Une erreur est survenue';
+        this.errorMessage.login = error.error.message || 'Une erreur est survenue';
         console.error('Login error:', error);
       }
     });
@@ -164,6 +174,7 @@ export class LoginComponent {
 
   toggleForm(): void {
     this.isLogin = !this.isLogin;
+    this.currentImage = this.isLogin ? 'login' : 'register';
     this.resetForms();
   }
 

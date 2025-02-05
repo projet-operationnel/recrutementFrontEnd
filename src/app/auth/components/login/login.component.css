@@ -1,45 +1,69 @@
 /* login-register.component.scss */
 :host {
   display: block;
+
 }
 
-.form-container {
-  perspective: 1000px;
-  transform-style: preserve-3d;
+.body{
+  background: linear-gradient(#079b425b,#0873b577,#dc852185),url(../../../../assets/background.jpg);
+  background-size: cover;
+}
+.perspective-container {
+  perspective: 1500px;
+  min-height: 450px;
 }
 
 .form-wrapper {
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  height: 100%;
+  width: 100%;
+
+  &.form-flip {
+    transform: rotateY(180deg);
+  }
 }
 
-.login-form, .register-form {
-  backface-visibility: hidden;
+.login-panel,
+.register-panel {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
+
+  backface-visibility: hidden;
+  transition: opacity 0.3s ease;
+  background: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+
+  &.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
 }
 
-.register-form {
-  transform: rotateY(180deg);
+.login-panel {
+  transform: rotateY(0deg);
+  z-index: 2;
 }
 
-.form-flip {
+.register-panel {
   transform: rotateY(180deg);
+  z-index: 1;
 }
 
 
 .form-input {
-  animation: slideIn 0.5s ease-out forwards;
   opacity: 0;
   transform: translateY(20px);
-}
+  animation: slideIn 0.5s ease-out forwards;
 
-@for $i from 1 through 5 {
-  .form-input:nth-child(#{$i}) {
-    animation-delay: #{$i * 0.1}s;
+  @for $i from 1 through 6 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1}s;
+    }
   }
 }
 
@@ -56,45 +80,77 @@
 
 
 button {
-  transition: all 0.3s ease;
+  &:not(:disabled) {
+    cursor: pointer;
+    transition: all 0.3s ease;
 
-  &:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
   }
 
-  &:active {
-    transform: translateY(0) scale(0.98);
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+}
+
+
+@media (max-width: 768px) {
+  .perspective-container {
+    min-height: 500px;
+  }
+
+  .login-panel,
+  .register-panel {
+    padding: 0.5rem;
+  }
+}
+
+input, button {
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(7, 155, 67, 0.2);
+  }
+}
+
+.form-wrapper {
+  & > div {
+    transition: all 0.3s ease-in-out;
   }
 }
 
 
-.forgot-password {
-  position: relative;
-  overflow: hidden;
-
-  &:after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255,255,255,0.2),
-      transparent
-    );
-    animation: flash 2s infinite;
-  }
+.error-message {
+  transform: translateY(-10px);
+  opacity: 0;
+  animation: slideDown 0.3s ease forwards;
 }
 
-@keyframes flash {
-  from {
-    left: -100%;
-  }
+@keyframes slideDown {
   to {
-    left: 100%;
+    transform: translateY(0);
+    opacity: 1;
   }
+}
+
+
+.absolute {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+}
+
+
+:host ::ng-deep .w-full.max-w-6xl {
+  min-height: 600px;
 }

@@ -8,6 +8,9 @@ const routes: Routes = [
   {
     path: "annonce", loadChildren: () => import("./components/annonce/annonce.module").then(m => m.AnnonceModule)
   },
+  {
+    path:'traiter',loadChildren:()=> import('./components/traite-candidat/traite-candidat.module').then(m => m.TraiteCandidatModule)
+  }
 ];
 
 
