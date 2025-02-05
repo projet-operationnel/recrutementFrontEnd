@@ -1,7 +1,7 @@
 export interface AnneeAcademique {
-  id:number,
-  libelle : string,
-  dateDebut : string,
-  dateFin: string,
-  estActive : boolean
+  id: number
+  libelle: string
+  dateDebut: number[]
+  dateFin: number[]
+  estActive: boolean
 }

@@ -8,6 +8,7 @@ module.exports = {
       colors: {
         primary: "#079B43",
         accent: "#DC8621",
+        blueuvs: '#0873B5',
         blackloader:'#00000033'
       },
       animation: {

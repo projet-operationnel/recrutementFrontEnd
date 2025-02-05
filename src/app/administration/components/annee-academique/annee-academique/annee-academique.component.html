@@ -1,1 +1,339 @@
-<p>annee-academique works!</p>
+<!-- annee-academique.component.html -->
+<div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+    <!-- En-tête -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-primary">Années Académiques</h1>
+      <button
+        (click)="openAddModal()"
+        class="px-4 py-2 bg-blueuvs text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        Ajouter
+      </button>
+    </div>
+
+    <!-- Barre de recherche et tri -->
+      <div class="mb-4 flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0 sm:space-x-4">
+        <div class="relative flex-1 max-w-md">
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="search()"
+            placeholder="Rechercher..."
+            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <button
+          (click)="toggleSortDirection()"
+          class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+        >
+          <span class="mr-2">Trier par date</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            [class.rotate-180]="sortDirection === 'desc'"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+
+
+
+    <!-- Table container avec scroll horizontal -->
+    <div class="overflow-hidden shadow-md rounded-lg">
+      <div class="overflow-x-auto">
+        <!-- Version mobile -->
+        <div class="block md:hidden">
+          <div
+            *ngFor="let item of filteredList"
+            class="bg-white mb-4 rounded-lg shadow p-4"
+          >
+            <div class="flex justify-between items-center mb-2">
+              <span class="font-bold">{{ item.libelle }}</span>
+              <span [class]="getStatusClass(item.estActive)">
+                {{ item.estActive ? "Actif" : "Inactif" }}
+              </span>
+            </div>
+            <div class="space-y-2 text-sm text-gray-500">
+              <div>
+                <span class="font-medium">Date Début:</span>
+                {{ formatDate(item.dateDebut) }}
+              </div>
+              <div>
+                <span class="font-medium">Date Fin:</span>
+                {{ formatDate(item.dateFin) }}
+              </div>
+            </div>
+            <div class="mt-3 flex justify-end space-x-2">
+              <button
+              (click)="toggleStatus(item)"
+              class="inline-flex items-center px-2 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-medium rounded"
+            >
+              <!-- SVGs restent les mêmes mais avec taille réduite -->
+              <svg
+                *ngIf="item.estActive"
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 mr-1 text-green-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <!-- SVG inactif similaire avec taille réduite -->
+              <svg
+                *ngIf="!item.estActive"
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 mr-1 text-red-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              {{ item.estActive ? "Désactiver" : "Activer" }}
+            </button>
+
+            <button
+              (click)="editItem(item)"
+              class="inline-flex items-center px-2 py-1 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-medium rounded"
+            >
+            <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path></svg>
+
+              Modifier
+            </button>
+
+            <button
+              (click)="deleteItem(item)"
+              class="inline-flex items-center px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+              Supprimer
+            </button>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Version desktop -->
+        <table class="hidden md:table min-w-full divide-y divide-gray-200">
+          <thead class="bg-accent">
+            <tr>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider"
+              >
+                Libellé
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider"
+              >
+                Date Début
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider"
+              >
+                Date Fin
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider"
+              >
+                Statut
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider"
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let item of filteredList">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ item.libelle }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ formatDate(item.dateDebut) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ formatDate(item.dateFin) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span [class]="getStatusClass(item.estActive)">
+                  {{ item.estActive ? "Actif" : "Inactif" }}
+                </span>
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2"
+              >
+              <button
+              (click)="toggleStatus(item)"
+              class="inline-flex items-center px-2 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-medium rounded"
+            >
+              <!-- SVGs restent les mêmes mais avec taille réduite -->
+              <svg
+                *ngIf="item.estActive"
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 mr-1 text-green-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <!-- SVG inactif similaire avec taille réduite -->
+              <svg
+                *ngIf="!item.estActive"
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 mr-1 text-red-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              {{ item.estActive ? "Désactiver" : "Activer" }}
+            </button>
+
+            <button
+              (click)="editItem(item)"
+              class="inline-flex items-center px-2 py-1 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-medium rounded"
+            >
+
+              <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path></svg>
+              Modifier
+            </button>
+
+            <button
+              (click)="deleteItem(item)"
+              class="inline-flex items-center px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+              Supprimer
+            </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal d'édition/ajout (inchangé) -->
+  <div
+    *ngIf="showModal"
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center"
+  >
+    <div
+      class="relative bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4"
+    >
+      <h2 class="text-xl font-bold mb-4">
+        {{ editMode ? "Modifier" : "Ajouter" }} une année académique
+      </h2>
+      <form (ngSubmit)="onSubmit()">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700"
+              >Libellé</label
+            >
+            <input
+              [(ngModel)]="currentItem.libelle"
+              name="libelle"
+              type="text"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700"
+              >Date de début</label
+            >
+            <input
+              [(ngModel)]="dateDebut"
+              name="dateDebut"
+              type="date"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700"
+              >Date de fin</label
+            >
+            <input
+              [(ngModel)]="dateFin"
+              name="dateFin"
+              type="date"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+        <div class="mt-6 flex justify-end space-x-3">
+          <button
+            type="button"
+            (click)="closeModal()"
+            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Annuler
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {{ editMode ? "Modifier" : "Ajouter" }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
