@@ -136,8 +136,8 @@ export class LoginComponent {
     ).subscribe({
       next: (response: any) => {
         if (response.statusCode) {
-          localStorage.setItem(environment.appName + "_token", response.token);
-          localStorage.setItem(environment.appName + '_user', JSON.stringify(response.nom));
+          localStorage.setItem(environment.appName + "_token", response.data.token);
+          localStorage.setItem(environment.appName + '_user', JSON.stringify(response.data.nom));
           this.resetForms();
           this.router.navigateByUrl('');
         } else {

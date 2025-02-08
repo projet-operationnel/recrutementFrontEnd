@@ -35,16 +35,6 @@ export class AuthService extends ParentService{
   }
 
 
-  logout(endpoint: string, data: any) {
-    const token = this.getToken();
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}` // Ajout du token dans le header
-    };
-
-    return this.gethttp.post(`${environment.url.api}${endpoint}`, data, { headers });
-  }
-
 
 
 }

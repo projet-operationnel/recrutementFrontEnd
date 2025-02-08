@@ -6,6 +6,8 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { captErrorInterceptor } from './helpers/interceptor/capt-error.interceptor';
 import { injectTokenInterceptor } from './helpers/interceptor/inject-token.interceptor';
 
+
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),

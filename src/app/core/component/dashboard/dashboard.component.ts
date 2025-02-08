@@ -126,6 +126,7 @@ export class DashboardComponent {
     this.alertService.showConfirmation("Déconnexion", "Voulez-vous vraiment vous déconnecter ?").then((result) => {
       if (result.isConfirmed) {  // Vérifiez si l'utilisateur a confirmé
         const token = this.authService.getToken();
+
         if (!token) {
           this.alertService.showAlert({
             title: "Erreur",
@@ -135,34 +136,36 @@ export class DashboardComponent {
           return;
         }
 
+        const data = {
+          'token': token
+        }
+
         this.isLoading = true;
-        localStorage.clear();
-        this.router.navigateByUrl('/auth');
         // Envoyez un objet vide comme données, le token sera dans le header
-        // this.authService.logout('logout', {}).pipe(
-        //   finalize(() => this.isLoading = false)
-        // ).subscribe({
-        //   next: (response: any) => {
-        //     if (response.status) {
-        //       localStorage.clear();
-        //       this.router.navigateByUrl('/auth');
-        //     } else {
-        //       this.alertService.showAlert({
-        //         title: "Erreur",
-        //         text: "La déconnexion a échoué",
-        //         icon: "error"
-        //       });
-        //     }
-        //   },
-        //   error: (error) => {
-        //     console.log(error);
-        //     this.alertService.showAlert({
-        //       title: "Erreur",
-        //       text: error.message || "Une erreur est survenue lors de la déconnexion",
-        //       icon: "warning"
-        //     });
-        //   }
-        // });
+        this.authService.postData('logout', data).pipe(
+          finalize(() => this.isLoading = false)
+        ).subscribe({
+          next: (response: any) => {
+            if (response.status) {
+              localStorage.clear();
+              this.router.navigateByUrl('/auth');
+            } else {
+              this.alertService.showAlert({
+                title: "Erreur",
+                text: "La déconnexion a échoué",
+                icon: "error"
+              });
+            }
+          },
+          error: (error) => {
+            console.log(error);
+            this.alertService.showAlert({
+              title: "Erreur",
+              text: error.message || "Une erreur est survenue lors de la déconnexion",
+              icon: "warning"
+            });
+          }
+        });
       }
     });
   }
