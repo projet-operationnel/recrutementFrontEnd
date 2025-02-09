@@ -64,7 +64,7 @@
             <div class="space-y-2 text-sm text-gray-500">
               <div>
                 <span class="font-medium">Date Début:</span>
-                {{ formatDate(item.dateDebut) }}
+                {{ formatDate(item.dateDebut ) }}
               </div>
               <div>
                 <span class="font-medium">Date Fin:</span>
@@ -272,50 +272,48 @@
   </div>
 
   <!-- Modal d'édition/ajout (inchangé) -->
-  <div
-    *ngIf="showModal()"
-    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center"
-  >
-    <div
-      class="relative bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4"
-    >
+  <div *ngIf="showModal()" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+    <div class="relative bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
       <h2 class="text-xl font-bold mb-4">
         {{ editMode() ? "Modifier" : "Ajouter" }} une année académique
       </h2>
-      <form (ngSubmit)="onSubmit()">
+      <form [formGroup]="anneeForm" (ngSubmit)="onSubmit()">
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Libellé</label
-            >
+            <label class="block text-sm font-medium text-gray-700">Libellé</label>
             <input
-              [(ngModel)]="currentItem().libelle"
-              name="libelle"
+              formControlName="libelle"
               type="text"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
+            <span *ngIf="anneeForm.get('libelle')?.invalid && anneeForm.get('libelle')?.touched" class="text-red-500 text-sm">
+              Ce champ est obligatoire.
+            </span>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Date de début</label
-            >
+            <label class="block text-sm font-medium text-gray-700">Date de début</label>
             <input
-              [(ngModel)]="dateDebut"
-              name="dateDebut"
+              formControlName="dateDebut"
               type="date"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
+            <span *ngIf="anneeForm.get('dateDebut')?.invalid && anneeForm.get('dateDebut')?.touched" class="text-red-500 text-sm">
+              Ce champ est obligatoire.
+            </span>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Date de fin</label
-            >
+            <label class="block text-sm font-medium text-gray-700">Date de fin</label>
             <input
-              [(ngModel)]="dateFin"
-              name="dateFin"
+              formControlName="dateFin"
               type="date"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
+            <span *ngIf="anneeForm.get('dateFin')?.invalid && anneeForm.get('dateFin')?.touched" class="text-red-500 text-sm">
+              Ce champ est obligatoire.
+            </span>
+            <div *ngIf="anneeForm.errors?.['dateRangeInvalid']" class="text-red-500 text-sm">
+              La date de fin doit être postérieure à la date de début.
+            </div>
           </div>
         </div>
         <div class="mt-6 flex justify-end space-x-3">
@@ -328,7 +326,8 @@
           </button>
           <button
             type="submit"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            [disabled]="anneeForm.invalid"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400"
           >
             {{ editMode() ? "Modifier" : "Ajouter" }}
           </button>

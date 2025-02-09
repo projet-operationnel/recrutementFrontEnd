@@ -1,6 +1,6 @@
 import { Component, computed, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, FormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { AnneeAcademique } from '../interfaces/annee-academique';
 import { AnneeAcademiqueService } from '../services/annee-academique.service';
 import { ResponseData } from '../../../../shared/interfaces/response-data';
@@ -12,6 +12,7 @@ import { AlertService } from '../../../../shared/services/Alert/alert.service';
   styleUrl: './annee-academique.component.css'
 })
 export class AnneeAcademiqueComponent implements OnInit {
+  anneeForm!: FormGroup;
   dataList = signal<AnneeAcademique[]>([]);
   isLoading = signal<boolean>(false);
   filteredList = computed(() => {
@@ -34,10 +35,30 @@ export class AnneeAcademiqueComponent implements OnInit {
   constructor(private anneeAcademiqueService: AnneeAcademiqueService, private alertService: AlertService) {}
 
   ngOnInit(): void {
+    this.initializeForm()
     this.getData();
     this.sortByDate();
   }
 
+
+  initializeForm(): void {
+    this.anneeForm = new FormGroup({
+      libelle: new FormControl('', Validators.required),
+      dateDebut: new FormControl('', Validators.required),
+      dateFin: new FormControl('', Validators.required),
+    }, { validators: this.dateRangeValidator });
+  }
+
+
+  dateRangeValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+    const dateDebut = control.get('dateDebut')?.value;
+    const dateFin = control.get('dateFin')?.value;
+
+    if (dateDebut && dateFin && new Date(dateDebut) > new Date(dateFin)) {
+      return { dateRangeInvalid: true };
+    }
+    return null; // Pas d'erreur
+  };
 
   getData() {
     this.isLoading.set(true); // Activer le loader
@@ -77,6 +98,13 @@ export class AnneeAcademiqueComponent implements OnInit {
   sortByDate(): void {
     this.dataList.update(list => {
       return list.sort((a, b) => {
+        // Si 'a' est active et 'b' ne l'est pas, 'a' doit venir en premier
+        if (a.estActive && !b.estActive) return -1;
+
+        // Si 'b' est active et 'a' ne l'est pas, 'b' doit venir en premier
+        if (!a.estActive && b.estActive) return 1;
+
+        // Si les deux sont actives ou non actives, trier par date de début
         const dateA = new Date(a.dateDebut[0], a.dateDebut[1] - 1, a.dateDebut[2]);
         const dateB = new Date(b.dateDebut[0], b.dateDebut[1] - 1, b.dateDebut[2]);
 
@@ -86,7 +114,6 @@ export class AnneeAcademiqueComponent implements OnInit {
       });
     });
   }
-
 
   // Nouvelle méthode pour inverser l'ordre de tri
   toggleSortDirection(): void {
@@ -130,6 +157,9 @@ export class AnneeAcademiqueComponent implements OnInit {
             // Mettre à jour le signal avec les données modifiées
             this.dataList.set(currentData);
 
+              // Trier la liste pour que l'année active soit en premier
+              this.sortByDate();
+
             // Afficher un message de succès
             this.alertService.showAlert({
               title: 'Succès',
@@ -158,18 +188,24 @@ export class AnneeAcademiqueComponent implements OnInit {
   openAddModal() {
     this.editMode.set(false);
     this.currentItem.set({} as AnneeAcademique);
-    this.dateDebut.set('');
-    this.dateFin.set('');
+    this.anneeForm.reset(); // Réinitialiser le formulaire
     this.showModal.set(true);
   }
 
-  editItem(item: AnneeAcademique) {
-    this.editMode.set(true);
-    this.currentItem.set({ ...item });
-    this.dateDebut.set(this.arrayToDateString(item.dateDebut));
-    this.dateFin.set(this.arrayToDateString(item.dateFin));
-    this.showModal.set(true);
-  }
+editItem(item: AnneeAcademique) {
+  this.editMode.set(true);
+  this.currentItem.set({ ...item });
+
+  // Remplir le formulaire avec les valeurs de l'élément
+  this.anneeForm.patchValue({
+    libelle: item.libelle,
+    dateDebut: this.arrayToDateString(item.dateDebut),
+    dateFin: this.arrayToDateString(item.dateFin),
+  });
+
+  this.showModal.set(true);
+}
+
 
   deleteItem(item: AnneeAcademique) {
     this.alertService.showConfirmation("Suppression", "Êtes-vous sûr de vouloir supprimer cette année académique").then((result) => {
@@ -177,6 +213,8 @@ export class AnneeAcademiqueComponent implements OnInit {
         this.isLoading.set(true); // Activer le loader
         this.anneeAcademiqueService.deleteData<number,ResponseData<AnneeAcademique>>("annee",item.id).subscribe({
           next: (data) => {
+              // Trier la liste pour que l'année active soit en premier
+               this.sortByDate();
             this.alertService.showAlert({
               title: 'Succès',
               text: data.message,
@@ -209,20 +247,35 @@ export class AnneeAcademiqueComponent implements OnInit {
 
 
   onSubmit() {
+    if (this.anneeForm.invalid) {
+      this.alertService.showAlert({
+        title: 'Erreur',
+        text: 'Veuillez remplir tous les champs obligatoires.',
+        icon: 'warning',
+      });
+      return;
+    }
+
+    const formValue = this.anneeForm.value;
     const currentItemValue = this.currentItem();
-    currentItemValue.dateDebut = this.dateStringToArray(this.dateDebut());
-    currentItemValue.dateFin = this.dateStringToArray(this.dateFin());
+    currentItemValue.libelle = formValue.libelle;
+    currentItemValue.dateDebut = this.dateStringToArray(formValue.dateDebut);
+    currentItemValue.dateFin = this.dateStringToArray(formValue.dateFin);
 
     this.isLoading.set(true); // Activer le loader
 
     if (this.editMode()) {
       const { id, estActive, ...dataToSend } = currentItemValue;
+
       this.anneeAcademiqueService.putData<any, ResponseData<AnneeAcademique>>(
         `annee/${id}`,
         dataToSend
       ).subscribe({
         next: (data) => {
+          console.log(data);
           this.dataList.update(list => list.map(i => i.id === id ? { ...i, ...dataToSend } : i));
+            // Trier la liste pour que l'année active soit en premier
+            this.sortByDate();
           this.alertService.showAlert({
             title: 'Succès',
             text: data.message,
@@ -231,8 +284,6 @@ export class AnneeAcademiqueComponent implements OnInit {
           this.isLoading.set(false); // Désactiver le loader
         },
         error: (err) => {
-          console.log(err);
-
           this.alertService.showAlert({
             title: 'Erreur',
             text: err.error.errors.libelle,
@@ -252,7 +303,13 @@ export class AnneeAcademiqueComponent implements OnInit {
         dataToSend
       ).subscribe({
         next: (data) => {
+          data.data.dateDebut = dataToSend.dateDebut
+          data.data.dateFin = dataToSend.dateFin
           this.dataList.update(list => [...list, data.data]);
+
+            // Trier la liste pour que l'année active soit en premier
+            this.sortByDate();
+
           this.alertService.showAlert({
             title: 'Succès',
             text: data.message,
