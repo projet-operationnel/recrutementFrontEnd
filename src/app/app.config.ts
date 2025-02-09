@@ -11,9 +11,11 @@ import { injectTokenInterceptor } from './helpers/interceptor/inject-token.inter
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideHttpClient(),
     provideHttpClient(
-      withInterceptors([captErrorInterceptor,injectTokenInterceptor])
+      withInterceptors([
+        captErrorInterceptor,
+        injectTokenInterceptor
+      ])
     )
   ]
 };

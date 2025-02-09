@@ -31,7 +31,7 @@
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-5 w-5"
-            [class.rotate-180]="sortDirection === 'desc'"
+            [class.rotate-180]="sortDirection() === 'desc'"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -52,7 +52,7 @@
         <!-- Version mobile -->
         <div class="block md:hidden">
           <div
-            *ngFor="let item of filteredList"
+            *ngFor="let item of filteredList()"
             class="bg-white mb-4 rounded-lg shadow p-4"
           >
             <div class="flex justify-between items-center mb-2">
@@ -177,7 +177,7 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr *ngFor="let item of filteredList">
+            <tr *ngFor="let item of filteredList()">
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {{ item.libelle }}
               </td>
@@ -273,14 +273,14 @@
 
   <!-- Modal d'édition/ajout (inchangé) -->
   <div
-    *ngIf="showModal"
+    *ngIf="showModal()"
     class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center"
   >
     <div
       class="relative bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4"
     >
       <h2 class="text-xl font-bold mb-4">
-        {{ editMode ? "Modifier" : "Ajouter" }} une année académique
+        {{ editMode() ? "Modifier" : "Ajouter" }} une année académique
       </h2>
       <form (ngSubmit)="onSubmit()">
         <div class="space-y-4">
@@ -289,7 +289,7 @@
               >Libellé</label
             >
             <input
-              [(ngModel)]="currentItem.libelle"
+              [(ngModel)]="currentItem().libelle"
               name="libelle"
               type="text"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -330,10 +330,16 @@
             type="submit"
             class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            {{ editMode ? "Modifier" : "Ajouter" }}
+            {{ editMode() ? "Modifier" : "Ajouter" }}
           </button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+
+
+
+
+<app-loader *ngIf="isLoading()"></app-loader>

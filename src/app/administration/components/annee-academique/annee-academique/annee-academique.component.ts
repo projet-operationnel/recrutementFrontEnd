@@ -1,72 +1,96 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, computed, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AnneeAcademique } from '../interfaces/annee-academique';
 import { AnneeAcademiqueService } from '../services/annee-academique.service';
 import { ResponseData } from '../../../../shared/interfaces/response-data';
+import { AlertService } from '../../../../shared/services/Alert/alert.service';
 
 @Component({
   selector: 'app-annee-academique',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
   templateUrl: './annee-academique.component.html',
   styleUrl: './annee-academique.component.css'
 })
 export class AnneeAcademiqueComponent implements OnInit {
-  dataList: AnneeAcademique[] = [
-    { id: 1, libelle: "Événement A", dateDebut: [2025, 1, 15], dateFin: [2025, 1, 20], estActive: true },
-    { id: 2, libelle: "Événement B", dateDebut: [2024, 2, 10], dateFin: [2024, 2, 15], estActive: false },
-    { id: 3, libelle: "Événement C", dateDebut: [2024, 3, 5], dateFin: [2024, 3, 10], estActive: true },
-  ];
+  dataList = signal<AnneeAcademique[]>([]);
+  isLoading = signal<boolean>(false);
+  filteredList = computed(() => {
+    return this.dataList().filter(item =>
+      !this.searchTerm().trim() ||
+      item.libelle.toLowerCase().includes(this.searchTerm().toLowerCase()) ||
+      this.formatDate(item.dateDebut).includes(this.searchTerm().toLowerCase()) ||
+      this.formatDate(item.dateFin).includes(this.searchTerm().toLowerCase())
+    );
+  });
 
-  filteredList: AnneeAcademique[] = [];
-  searchTerm: string = '';
-  sortDirection: 'asc' | 'desc' = 'asc';
+  searchTerm = signal<string>('');
+  sortDirection = signal<'asc' | 'desc'>('asc');
+  showModal = signal<boolean>(false);
+  editMode = signal<boolean>(false);
+  currentItem = signal<AnneeAcademique>({} as AnneeAcademique);
+  dateDebut = signal<string>('');
+  dateFin = signal<string>('');
 
-  showModal = false;
-  editMode = false;
-  currentItem: AnneeAcademique = {} as AnneeAcademique;
-  dateDebut: string = '';
-  dateFin: string = '';
-
-  constructor(private anneeAcademiqueService: AnneeAcademiqueService) {}
+  constructor(private anneeAcademiqueService: AnneeAcademiqueService, private alertService: AlertService) {}
 
   ngOnInit(): void {
-    // this.getData();
-    this.filteredList = [...this.dataList];
+    this.getData();
     this.sortByDate();
   }
 
+
+  getData() {
+    this.isLoading.set(true); // Activer le loader
+    this.anneeAcademiqueService.getData<any>('annee').subscribe({
+      next: (response) => {
+        if (response && Array.isArray(response)) {
+          const formattedData: AnneeAcademique[] = response.map(item => ({
+            id: item.data.id,
+            libelle: item.data.libelle,
+            dateDebut: this.convertDateToArray(item.data.dateDebut),
+            dateFin: this.convertDateToArray(item.data.dateFin),
+            estActive: item.data.estActive
+          }));
+
+          this.dataList.set(formattedData);
+        }
+      },
+      error: (err) => {        this.isLoading.set(false); // Désactiver le loader en cas d'erreur
+      },
+      complete: () => {        this.isLoading.set(false); // Désactiver le loader une fois terminé
+      }
+    });
+  }
+  // Fonction pour convertir une date string "YYYY-MM-DD" en [YYYY, MM, DD]
+  convertDateToArray(dateStr: string): number[] {
+    return dateStr.split('-').map(num => parseInt(num, 10));
+  }
+
+
   // Nouvelle méthode pour la recherche
   search(): void {
-    if (!this.searchTerm.trim()) {
-      this.filteredList = [...this.dataList];
-    } else {
-      const searchTermLower = this.searchTerm.toLowerCase();
-      this.filteredList = this.dataList.filter(item =>
-        item.libelle.toLowerCase().includes(searchTermLower) ||
-        this.formatDate(item.dateDebut).includes(searchTermLower) ||
-        this.formatDate(item.dateFin).includes(searchTermLower)
-      );
-    }
+    this.filteredList();
     this.sortByDate();
   }
 
   // Nouvelle méthode pour le tri par date
   sortByDate(): void {
-    this.filteredList.sort((a, b) => {
-      const dateA = new Date(a.dateDebut[0], a.dateDebut[1] - 1, a.dateDebut[2]);
-      const dateB = new Date(b.dateDebut[0], b.dateDebut[1] - 1, b.dateDebut[2]);
+    this.dataList.update(list => {
+      return list.sort((a, b) => {
+        const dateA = new Date(a.dateDebut[0], a.dateDebut[1] - 1, a.dateDebut[2]);
+        const dateB = new Date(b.dateDebut[0], b.dateDebut[1] - 1, b.dateDebut[2]);
 
-      return this.sortDirection === 'asc'
-        ? dateA.getTime() - dateB.getTime()
-        : dateB.getTime() - dateA.getTime();
+        return this.sortDirection() === 'asc'
+          ? dateA.getTime() - dateB.getTime()
+          : dateB.getTime() - dateA.getTime();
+      });
     });
   }
 
+
   // Nouvelle méthode pour inverser l'ordre de tri
   toggleSortDirection(): void {
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    this.sortDirection.update(dir => dir === 'asc' ? 'desc' : 'asc');
     this.sortByDate();
   }
 
@@ -83,54 +107,171 @@ export class AnneeAcademiqueComponent implements OnInit {
   }
 
   toggleStatus(item: AnneeAcademique) {
-    item.estActive = !item.estActive;
-    // Appel API pour mettre à jour le statut
+    const data = {
+      id: item.id,
+    };
+    this.alertService.showConfirmation("Suppression", "Voulez vous activez cette année academique ?").then((result) => {
+      if (result.isConfirmed) {
+        this.isLoading.set(true); // Activer le loader
+        this.anneeAcademiqueService.postData<any, ResponseData<AnneeAcademique>>(`annee/${item.id}/activer`, data).subscribe({
+          next: (data) => {
+            const currentData = this.dataList();
+
+            // Désactiver l'ancien actif
+            currentData.forEach((annee) => {
+              if (annee.estActive) {
+                annee.estActive = false;
+              }
+            });
+
+            // Activer le nouvel élément
+            item.estActive = true;
+
+            // Mettre à jour le signal avec les données modifiées
+            this.dataList.set(currentData);
+
+            // Afficher un message de succès
+            this.alertService.showAlert({
+              title: 'Succès',
+              text: data.message,
+              icon: 'success',
+            });
+
+            this.isLoading.set(false); // Désactiver le loader
+          },
+          error: (err) => {
+            this.isLoading.set(false); // Désactiver le loader en cas d'erreur
+            this.alertService.showAlert({
+              title: 'Erreur',
+              text: err.message,
+              icon: 'warning',
+            });
+          },
+          complete: () => {
+            this.isLoading.set(false); // Désactiver le loader une fois terminé
+          }
+        });
+      }
+    })
   }
 
   openAddModal() {
-    this.editMode = false;
-    this.currentItem = {} as AnneeAcademique;
-    this.dateDebut = '';
-    this.dateFin = '';
-    this.showModal = true;
+    this.editMode.set(false);
+    this.currentItem.set({} as AnneeAcademique);
+    this.dateDebut.set('');
+    this.dateFin.set('');
+    this.showModal.set(true);
   }
 
   editItem(item: AnneeAcademique) {
-    this.editMode = true;
-    this.currentItem = { ...item };
-    this.dateDebut = this.arrayToDateString(item.dateDebut);
-    this.dateFin = this.arrayToDateString(item.dateFin);
-    this.showModal = true;
+    this.editMode.set(true);
+    this.currentItem.set({ ...item });
+    this.dateDebut.set(this.arrayToDateString(item.dateDebut));
+    this.dateFin.set(this.arrayToDateString(item.dateFin));
+    this.showModal.set(true);
   }
 
   deleteItem(item: AnneeAcademique) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette année académique ?')) {
-      // Appel API pour supprimer l'item
-      const index = this.dataList.findIndex(i => i.id === item.id);
-      if (index !== -1) {
-        this.dataList.splice(index, 1);
-        this.search(); // Mettre à jour la liste filtrée
+    this.alertService.showConfirmation("Suppression", "Êtes-vous sûr de vouloir supprimer cette année académique").then((result) => {
+      if (result.isConfirmed) {
+        this.isLoading.set(true); // Activer le loader
+        this.anneeAcademiqueService.deleteData<number,ResponseData<AnneeAcademique>>("annee",item.id).subscribe({
+          next: (data) => {
+            this.alertService.showAlert({
+              title: 'Succès',
+              text: data.message,
+              icon: 'success',
+            });
+
+            this.dataList.update(list => list.filter(i => i.id !== item.id));
+            this.search(); // Mettre à jour la liste filtrée
+          },
+          error: (err) => {
+            this.isLoading.set(false); // Activer le loader
+            this.alertService.showAlert({
+              title: 'Erreur',
+              text: err.error.message,
+              icon: 'warning',
+            });
+          },
+          complete: () => {
+            this.isLoading.set(false); // Activer le loader
+          },
+        })
       }
+
+    })
     }
-  }
 
   closeModal() {
-    this.showModal = false;
+    this.showModal.set(false);
   }
 
-  onSubmit() {
-    this.currentItem.dateDebut = this.dateStringToArray(this.dateDebut);
-    this.currentItem.dateFin = this.dateStringToArray(this.dateFin);
 
-    if (this.editMode) {
-      const index = this.dataList.findIndex(i => i.id === this.currentItem.id);
-      if (index !== -1) {
-        this.dataList[index] = { ...this.currentItem };
-      }
+  onSubmit() {
+    const currentItemValue = this.currentItem();
+    currentItemValue.dateDebut = this.dateStringToArray(this.dateDebut());
+    currentItemValue.dateFin = this.dateStringToArray(this.dateFin());
+
+    this.isLoading.set(true); // Activer le loader
+
+    if (this.editMode()) {
+      const { id, estActive, ...dataToSend } = currentItemValue;
+      this.anneeAcademiqueService.putData<any, ResponseData<AnneeAcademique>>(
+        `annee/${id}`,
+        dataToSend
+      ).subscribe({
+        next: (data) => {
+          this.dataList.update(list => list.map(i => i.id === id ? { ...i, ...dataToSend } : i));
+          this.alertService.showAlert({
+            title: 'Succès',
+            text: data.message,
+            icon: 'success',
+          });
+          this.isLoading.set(false); // Désactiver le loader
+        },
+        error: (err) => {
+          console.log(err);
+
+          this.alertService.showAlert({
+            title: 'Erreur',
+            text: err.error.errors.libelle,
+            icon: 'warning',
+          });
+          this.isLoading.set(false); // Désactiver le loader en cas d'erreur
+        },
+        complete: () => {
+          this.isLoading.set(false); // Désactiver le loader une fois terminé
+        }
+      });
     } else {
-      // Simuler un nouvel ID pour la démo
-      const newId = Math.max(...this.dataList.map(i => i.id)) + 1;
-      this.dataList.push({ ...this.currentItem, id: newId });
+      const { estActive, ...dataToSend } = currentItemValue;
+
+      this.anneeAcademiqueService.postData<any, ResponseData<AnneeAcademique>>(
+        'annee',
+        dataToSend
+      ).subscribe({
+        next: (data) => {
+          this.dataList.update(list => [...list, data.data]);
+          this.alertService.showAlert({
+            title: 'Succès',
+            text: data.message,
+            icon: 'success',
+          });
+          this.isLoading.set(false); // Désactiver le loader
+        },
+        error: (err) => {
+          this.alertService.showAlert({
+            title: 'Erreur',
+            text: err.error.errors.libelle,
+            icon: 'warning',
+          });
+          this.isLoading.set(false); // Désactiver le loader en cas d'erreur
+        },
+        complete: () => {
+          this.isLoading.set(false); // Désactiver le loader une fois terminé
+        }
+      });
     }
 
     this.search(); // Mettre à jour la liste filtrée

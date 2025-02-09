@@ -146,7 +146,7 @@ export class DashboardComponent {
           finalize(() => this.isLoading = false)
         ).subscribe({
           next: (response: any) => {
-            if (response.status) {
+            if (response.statusCode === 200) {
               localStorage.clear();
               this.router.navigateByUrl('/auth');
             } else {
