@@ -75,6 +75,25 @@ export class DashboardComponent {
     this.isSidebarOpen = !this.isSidebarOpen;
   }
 
+    // Vérifier si l'utilisateur est un admin
+    isAdmin(): boolean {
+      const user = this.authService.getUser();
+      if (user && user.role === 'ADMIN') {
+        return user && user.role === 'ADMIN'; 
+      }
+      return false;
+    }
+  
+    // Vérifier si l'utilisateur est un candidat
+    isCandidat(): boolean {
+      const user = this.authService.getUser();
+      if (user && user.role === 'CANDIDAT') {
+        return user && user.role === 'CANDIDAT';
+      }
+      return false;
+    }
+  
+
   toggleMobileMenu() {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
     if (this.isMobileMenuOpen) {

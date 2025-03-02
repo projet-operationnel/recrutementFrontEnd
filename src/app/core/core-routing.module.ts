@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DashboardComponent } from './component/dashboard/dashboard.component';
-
+import { RoleGuard } from '../helpers/guard/role/role.guard';
 
 const routes: Routes = [
   {
@@ -12,11 +12,15 @@ const routes: Routes = [
         path: 'administration',
         loadChildren: () =>
           import('../administration/administration.module').then((m) => m.AdministrationModule),
+        canActivate: [RoleGuard], // Appliquer le guard
+        data: { expectedRole: 'ADMIN' } // Rôle attendu pour accéder à cette route
       },
       {
         path: 'candidat',
         loadChildren: () =>
           import('../candidat/candidat.module').then((m) => m.CandidatModule),
+        canActivate: [RoleGuard], // Appliquer le guard
+        data: { expectedRole: 'CANDIDAT' } // Rôle attendu pour accéder à cette route
       },
       {
         path: '', redirectTo: 'administration', pathMatch: 'full'
@@ -30,8 +34,3 @@ const routes: Routes = [
   exports: [RouterModule]
 })
 export class CoreRoutingModule { }
-
-
-
-
-

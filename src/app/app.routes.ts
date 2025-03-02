@@ -11,6 +11,13 @@ export const routes: Routes = [
     path: '', loadChildren: () => import('./core/core.module').then(m => m.CoreModule),
     canActivate: [authGuard]
   },
+  {
+    path: 'home', loadChildren: () => import('./landing-page/landing-page.module').then(m => m.LandingPageModule),
+  },
+  {
+    path: 'apply/:id', loadChildren: () => import('./apply/apply.module').then(m => m.ApplyModule),canActivate: [authGuard]
+  },
+
 
   {
     path: "**", redirectTo: ""

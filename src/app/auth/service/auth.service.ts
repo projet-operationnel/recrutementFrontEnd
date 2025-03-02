@@ -26,6 +26,8 @@ export class AuthService extends ParentService{
     return "";
   }
 
+  
+
   getUser(): User | null {
     return JSON.parse(localStorage.getItem(environment.appName + "_user")!) as User;
   }
@@ -33,8 +35,5 @@ export class AuthService extends ParentService{
   updateUserInLocalStorage(user: User): void {
       localStorage.setItem(environment.appName + "_user", JSON.stringify(user));
   }
-
-
-
 
 }

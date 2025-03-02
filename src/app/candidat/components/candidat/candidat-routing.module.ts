@@ -1,9 +1,10 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { CandidatureComponent } from './candidature/candidature.component';
 
 const routes: Routes = [
   {
-    path:'candidature',loadChildren:()=> import('./components/candidat/candidat.module').then(m => m.CandidatModule)
+    path: '',component: CandidatureComponent,
   }
 ];
 

@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../service/auth.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router'; // Ajoutez ActivatedRoute
 import { AlertService } from '../../../shared/services/Alert/alert.service';
 import { Login } from '../../interfaces/login';
 import { ResponseData } from '../../../shared/interfaces/response-data';
@@ -9,6 +9,7 @@ import { UserLogin } from '../../interfaces/user-login';
 import { environment } from '../../../../environments/environment.development';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { finalize } from 'rxjs';
+import { AuthStateService } from '../../../landing-page/services/auth-state-service.service';
 
 @Component({
   selector: 'app-login',
@@ -48,8 +49,7 @@ import { finalize } from 'rxjs';
     ])
   ]
 })
-
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   currentImage = 'login';
   isLogin = true;
   isLoading = false;
@@ -60,14 +60,26 @@ export class LoginComponent {
 
   loginForm!: FormGroup;
   registerForm!: FormGroup;
+  returnUrl: string = ''; // Ajoutez cette variable pour stocker l'URL de redirection
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private alertService: AlertService
+    private route: ActivatedRoute, // Injectez ActivatedRoute
+    private alertService: AlertService,
+    private authStateService: AuthStateService
   ) {
     this.initializeForms();
+  }
+
+  ngOnInit(): void {
+    this.authStateService.authState$.subscribe((state) => {
+      this.isLogin = state === 'login';
+    });
+
+    // Récupérez l'URL de redirection depuis les paramètres de requête
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
   }
 
   private initializeForms(): void {
@@ -137,9 +149,17 @@ export class LoginComponent {
       next: (response: any) => {
         if (response.statusCode) {
           localStorage.setItem(environment.appName + "_token", response.data.token);
-          localStorage.setItem(environment.appName + '_user', JSON.stringify(response.data.nom));
+          localStorage.setItem(environment.appName + '_user', JSON.stringify(response.data));
           this.resetForms();
-          this.router.navigateByUrl('');
+
+          // Redirigez l'utilisateur vers l'URL de redirection (ou la page d'accueil par défaut)
+          const decodedUrl = this.returnUrl ? decodeURIComponent(this.returnUrl) : '/';
+          console.log(decodedUrl);
+          
+        // Naviguer vers l'URL décodée
+        this.router.navigateByUrl(decodedUrl);
+
+          // this.router.navigateByUrl(this.returnUrl);
         } else {
           this.errorMessage.login = response.message;
         }
@@ -177,5 +197,4 @@ export class LoginComponent {
     this.currentImage = this.isLogin ? 'login' : 'register';
     this.resetForms();
   }
-
 }

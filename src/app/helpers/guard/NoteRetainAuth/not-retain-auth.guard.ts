@@ -7,7 +7,7 @@ export const notRetainAuthGuard: CanActivateFn = (route, state) => {
     const router = inject(Router);
 
     if(autService.isAuthenticate()){
-      router.navigateByUrl("");
+      router.navigateByUrl("home");
       return false;
     }
     return true;
