@@ -79,7 +79,11 @@ export class LoginComponent implements OnInit {
     });
 
     // Récupérez l'URL de redirection depuis les paramètres de requête
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
+  }
+
+  goToHome() {
+    this.router.navigate(['/home']);
   }
 
   private initializeForms(): void {
@@ -153,9 +157,8 @@ export class LoginComponent implements OnInit {
           this.resetForms();
 
           // Redirigez l'utilisateur vers l'URL de redirection (ou la page d'accueil par défaut)
-          const decodedUrl = this.returnUrl ? decodeURIComponent(this.returnUrl) : '/';
-          console.log(decodedUrl);
-          
+          const decodedUrl = this.returnUrl ? decodeURIComponent(this.returnUrl) : '/home';
+
         // Naviguer vers l'URL décodée
         this.router.navigateByUrl(decodedUrl);
 

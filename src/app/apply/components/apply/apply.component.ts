@@ -41,7 +41,7 @@ export class ApplyComponent implements OnInit {
     this.user = this.authService.getUser();
 
     if (!this.user) {
-      this.router.navigate(['/login'], { 
+      this.router.navigate(['/login'], {
         queryParams: { returnUrl: `/apply/${this.announcementId}` }
       });
       return;
@@ -54,6 +54,10 @@ export class ApplyComponent implements OnInit {
       email: this.user.email,
       telephone: this.user.telephone || ''
     });
+  }
+
+  goToHome() {
+    this.router.navigate(['/home']);
   }
 
   onFileChange(event: any, type: 'cv' | 'motivationLetter'): void {
@@ -90,16 +94,16 @@ export class ApplyComponent implements OnInit {
 
     // Create FormData and append files
     const formData = new FormData();
-    
+
     // Append the announcement ID
     formData.append("annonceRecrutementId", this.announcementId);
     formData.append('cvDocument', this.cvFile);
     formData.append('motivationDocument', this.motivationLetterFile);
 
 
-    
-  
-    
+
+
+
     // Example of what's being sent in the FormData:
     this.actifLoading = true
     this.applyService.postData<any,ResponseData<any>>("candidatures",formData).subscribe({
@@ -143,7 +147,7 @@ export class ApplyComponent implements OnInit {
   getErrorMessage(fieldName: string): string {
     const control = this.applyForm.get(fieldName);
     if (!control) return '';
-    
+
     if (control.hasError('required')) {
       return 'Ce champ est requis';
     }

@@ -23,7 +23,7 @@ const routes: Routes = [
         data: { expectedRole: 'CANDIDAT' } // Rôle attendu pour accéder à cette route
       },
       {
-        path: '', redirectTo: 'administration', pathMatch: 'full'
+        path: '', redirectTo: 'home', pathMatch: 'full'
       }
     ],
   },

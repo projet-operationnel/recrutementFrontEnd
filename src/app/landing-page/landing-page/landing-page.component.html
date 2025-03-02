@@ -4,24 +4,36 @@
     <div class="absolute inset-0">
       <img src="./../../../assets/background.jpg" alt="UVS Campus" class="w-full h-full object-cover opacity-20">
     </div>
-    
+
     <div class="relative max-w-7xl mx-auto py-24 px-4 sm:px-6 lg:px-8">
       <div class="text-center">
         <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl animate-fade-in">
-          Université Virtuelle du Sénégal
+          Université Numérique Cheikh Hamidou Kane
         </h1>
         <p class="mt-6 max-w-2xl mx-auto text-xl text-gray-200 animate-fade-in delay-100">
           Plateforme de recrutement des tuteurs pour un accompagnement pédagogique d'excellence
         </p>
         <div class="mt-10 flex justify-center gap-4 animate-fade-in delay-200">
-          <button (click)="navigateToLogin()" 
-                  class="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary transition-transform transform hover:scale-105 md:py-4 md:text-lg md:px-10">
-            {{ isAuthenticated ? 'Accéder au dashboard' : 'Se connecter' }}
+          <button (click)="navigateToLogin()" *ngIf="!isAuthenticated"
+              class="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary transition-transform transform hover:scale-105 md:py-4 md:text-lg md:px-10">
+              Se connecter
           </button>
+
+          <button (click)="navigateToLogin()" *ngIf="isAuthenticated && userRole === 'ADMIN'"
+              class="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary transition-transform transform hover:scale-105 md:py-4 md:text-lg md:px-10">
+              Accéder au dashboard'
+          </button>
+
           <button *ngIf="!isAuthenticated"
-                  (click)="navigateToRegister()" 
+                  (click)="navigateToRegister()"
                   class="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-accent hover:from-blue-600 hover:to-blue-700 transition-transform transform hover:scale-105 md:py-4 md:text-lg md:px-10">
             S'inscrire
+          </button>
+
+          <button *ngIf="isAuthenticated"
+                  (click)="logout()"
+                  class="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 transition-transform transform hover:scale-105 md:py-4 md:text-lg md:px-10">
+            Se déconnecter
           </button>
         </div>
       </div>
@@ -35,12 +47,12 @@
         Offres de Tutorat Disponibles
       </h2>
       <p class="mt-4 text-lg text-gray-500 animate-fade-in delay-100">
-        Découvrez les dernières opportunités de tutorat à l'UVS
+        Découvrez les dernières opportunités de tutorat à l'UNCHK
       </p>
     </div>
 
     <div class="mt-12 grid gap-8 lg:grid-cols-2">
-      <div *ngFor="let announcement of announcements" 
+      <div *ngFor="let announcement of announcements"
            class="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-2">
         <div class="p-6">
           <div class="flex items-center justify-between">
@@ -58,7 +70,7 @@
             <span class="text-sm text-gray-500">
               Publié le {{announcement.data.datePublication | date:'dd/MM/yyyy'}}
             </span>
-            <button (click)="navigateToApplication(announcement.data.id)" 
+            <button (click)="navigateToApplication(announcement.data.id)"
                     class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-md hover:from-blue-600 hover:to-blue-700 transition-transform transform hover:scale-105">
               Postuler
             </button>
@@ -80,9 +92,9 @@
 
       <!-- Section 2: À propos -->
       <div>
-        <h3 class="text-lg font-semibold mb-4">À propos de l'UVS</h3>
+        <h3 class="text-lg font-semibold mb-4">À propos de l'UNCHK</h3>
         <p class="text-gray-400">
-          L'Université Virtuelle du Sénégal est une institution d'excellence dédiée à l'éducation en ligne et à l'accompagnement pédagogique.
+          L'Université Numérique Cheikh Hamidou Kane est une institution d'excellence dédiée à l'éducation en ligne et à l'accompagnement pédagogique.
         </p>
       </div>
 

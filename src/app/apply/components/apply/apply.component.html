@@ -16,6 +16,19 @@
   <!-- Right side with form -->
   <div class="w-full lg:w-1/2 overflow-y-auto bg-gray-50">
     <div class="max-w-2xl mx-auto px-6 py-12">
+      <!-- Bouton pour retourner à la page /home -->
+      <div class="flex justify-end mb-4">
+        <button
+          (click)="goToHome()"
+          class="flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Retour à l'accueil
+        </button>
+      </div>
+
       <div class="mb-8">
         <h2 class="text-3xl font-bold text-gray-900">Postuler à l'offre</h2>
         <p class="mt-2 text-gray-600">Référence: {{ announcementId }}</p>
@@ -26,8 +39,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Nom</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               formControlName="nom"
               class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg"
               [class.border-red-500]="isFieldInvalid('nom')"
@@ -39,8 +52,8 @@
 
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Prénom</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               formControlName="prenom"
               class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg"
               [class.border-red-500]="isFieldInvalid('prenom')"
@@ -52,8 +65,8 @@
 
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Email</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               formControlName="email"
               class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg"
               [class.border-red-500]="isFieldInvalid('email')"
@@ -65,8 +78,8 @@
 
           <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Téléphone</label>
-            <input 
-              type="tel" 
+            <input
+              type="tel"
               formControlName="telephone"
               class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg"
               [class.border-red-500]="isFieldInvalid('telephone')"
@@ -82,14 +95,14 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">CV (PDF)</label>
             <div class="relative">
-              <input 
-                type="file" 
-                (change)="onFileChange($event, 'cv')" 
+              <input
+                type="file"
+                (change)="onFileChange($event, 'cv')"
                 accept=".pdf"
-                class="hidden" 
+                class="hidden"
                 #cvInput
               >
-              <button 
+              <button
                 type="button"
                 (click)="cvInput.click()"
                 class="w-full flex items-center justify-center px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors group"
@@ -107,14 +120,14 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Lettre de motivation (PDF)</label>
             <div class="relative">
-              <input 
-                type="file" 
-                (change)="onFileChange($event, 'motivationLetter')" 
+              <input
+                type="file"
+                (change)="onFileChange($event, 'motivationLetter')"
                 accept=".pdf"
-                class="hidden" 
+                class="hidden"
                 #motivationInput
               >
-              <button 
+              <button
                 type="button"
                 (click)="motivationInput.click()"
                 class="w-full flex items-center justify-center px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors group"
@@ -131,9 +144,9 @@
         </div>
 
         <!-- Submit button -->
-        <button 
+        <button
           type="submit"
-          (click)="onSubmit()" 
+          (click)="onSubmit()"
           class="w-full mt-8 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center"
         >
           <span>Soumettre ma candidature</span>
@@ -143,7 +156,4 @@
   </div>
 </div>
 
-
-<app-loader *ngIf="actifLoading">
-  
-</app-loader>
+<app-loader *ngIf="actifLoading"></app-loader>

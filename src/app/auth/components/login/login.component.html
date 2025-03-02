@@ -2,8 +2,18 @@
   <div class="w-full max-w-6xl bg-white rounded-2xl shadow-xl flex flex-col lg:flex-row overflow-hidden">
     <!-- Left Section (Form) -->
     <div class="w-full lg:w-1/2 p-4 sm:p-8">
-      <div class="flex justify-center mb-8">
+      <div class="flex justify-between items-center mb-8">
         <img src="../../../../assets/logo.png" class="w-32 sm:w-40" alt="Logo" />
+        <!-- Bouton pour retourner à la page /home -->
+        <button
+          (click)="goToHome()"
+          class="flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Retour à l'accueil
+        </button>
       </div>
 
       <div class="perspective-container">
@@ -165,10 +175,6 @@
     </div>
 
     <!-- Right Section (Background Image) -->
-    <!-- <div class="hidden lg:block lg:w-1/2">
-      <div class="h-full bg-cover bg-center bg-no-repeat" style="background-image: url('../../../../assets/fond_login.jpg')"></div>
-    </div> -->
-
     <div class="hidden lg:block lg:w-1/2">
       <div class="h-full bg-cover bg-center bg-no-repeat transition-all duration-500"
            [ngStyle]="{
@@ -178,7 +184,5 @@
            }">
       </div>
     </div>
-
-
   </div>
 </div>
